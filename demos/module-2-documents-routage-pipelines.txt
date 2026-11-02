@@ -1,0 +1,145 @@
+# Module 2 : l'API des documents, le routage, un pipeline (démonstrations), à coller dans la console de Kibana
+# (chaque requête a tourné sur Elasticsearch 9.5.6 ; Ctrl+Entrée exécute celle où est le curseur)
+
+# --- Créer, lire, modifier, supprimer un document
+
+PUT /livres/_doc/1
+{
+  "titre": "Le Petit Prince",
+  "auteur": "Antoine de Saint-Exupéry",
+  "annee": 1943,
+  "genres": "conte;jeunesse"
+}
+
+GET /livres/_doc/1
+
+POST /livres/_doc
+{
+  "titre": "L’Étranger",
+  "auteur": "Albert Camus",
+  "annee": 1942,
+  "genres": "roman"
+}
+
+POST /livres/_update/1
+{
+  "doc": {
+    "pages": 96
+  }
+}
+
+GET /livres/_doc/1
+
+PUT /livres/_create/1
+{
+  "titre": "Le Petit Prince"
+}
+
+PUT /livres/_doc/1?if_seq_no=0&if_primary_term=1
+{
+  "titre": "Le Petit Prince",
+  "annee": 1943
+}
+
+DELETE /livres/_doc/1
+
+GET /livres/_doc/1
+
+# --- Plusieurs opérations en une requête
+
+POST /livres/_bulk
+{"index": {"_id": "1"}}
+{"titre": "Le Petit Prince", "auteur": "Antoine de Saint-Exupéry", "annee": 1943, "genres": "conte;jeunesse"}
+{"index": {"_id": "2"}}
+{"titre": "Les Misérables", "auteur": "Victor Hugo", "annee": 1862, "genres": "roman"}
+{"index": {"_id": "3"}}
+{"titre": "Germinal", "auteur": "Émile Zola", "annee": 1885, "genres": "roman"}
+{"create": {"_id": "2"}}
+{"titre": "Les Misérables, en double"}
+{"update": {"_id": "3"}}
+{"doc": {"pages": 592}}
+{"delete": {"_id": "999"}}
+
+# --- Shards et routage
+
+PUT /livres-3
+{
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 0
+  }
+}
+
+POST /livres-3/_bulk
+{"index": {"_id": "1"}}
+{"titre": "Le Petit Prince", "auteur": "Antoine de Saint-Exupéry", "annee": 1943}
+{"index": {"_id": "2"}}
+{"titre": "Les Misérables", "auteur": "Victor Hugo", "annee": 1862}
+{"index": {"_id": "3"}}
+{"titre": "Germinal", "auteur": "Émile Zola", "annee": 1885}
+{"index": {"_id": "4"}}
+{"titre": "Madame Bovary", "auteur": "Gustave Flaubert", "annee": 1857}
+{"index": {"_id": "5"}}
+{"titre": "Le Rouge et le Noir", "auteur": "Stendhal", "annee": 1830}
+{"index": {"_id": "6"}}
+{"titre": "Bel-Ami", "auteur": "Guy de Maupassant", "annee": 1885}
+
+GET /_cat/shards/livres-3?v&h=index,shard,prirep,docs
+
+GET /livres-3/_search_shards?routing=4&filter_path=shards.shard,shards.primary
+
+PUT /livres-3/_doc/7?routing=camus
+{
+  "titre": "La Peste",
+  "auteur": "Albert Camus",
+  "annee": 1947
+}
+
+GET /livres-3/_doc/7
+
+GET /livres-3/_doc/7?routing=camus
+
+# --- Un pipeline d'ingestion
+
+GET /_nodes/ingest?filter_path=nodes.*.ingest.processors.type
+
+PUT /_ingest/pipeline/livres-nettoyage
+{
+  "description": "Livres : les genres en liste, la date d’ajout",
+  "processors": [
+    {
+      "split": {
+        "field": "genres",
+        "separator": ";"
+      }
+    },
+    {
+      "set": {
+        "field": "ajoute_le",
+        "value": "{{_ingest.timestamp}}"
+      }
+    }
+  ]
+}
+
+POST /_ingest/pipeline/livres-nettoyage/_simulate
+{
+  "docs": [
+    {
+      "_source": {
+        "titre": "Le Petit Prince",
+        "genres": "conte;jeunesse"
+      }
+    }
+  ]
+}
+
+PUT /livres/_doc/4?pipeline=livres-nettoyage
+{
+  "titre": "Vingt mille lieues sous les mers",
+  "auteur": "Jules Verne",
+  "annee": 1870,
+  "genres": "roman;aventure"
+}
+
+GET /livres/_doc/4

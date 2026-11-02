@@ -1,0 +1,238 @@
+# Module 3 : object, nested, join, analyseurs (démonstrations), à coller dans la console de Kibana
+# (chaque requête a tourné sur Elasticsearch 9.5.6 ; Ctrl+Entrée exécute celle où est le curseur)
+
+# --- object ou nested
+
+PUT /livres-editions/_doc/1?refresh=true
+{
+  "titre": "Le Petit Prince",
+  "editions": [
+    {
+      "editeur": "Reynal & Hitchcock",
+      "annee": 1943
+    },
+    {
+      "editeur": "Gallimard",
+      "annee": 1946
+    }
+  ]
+}
+
+GET /livres-editions/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "editions.editeur": "Gallimard"
+          }
+        },
+        {
+          "match": {
+            "editions.annee": 1943
+          }
+        }
+      ]
+    }
+  }
+}
+
+PUT /livres-editions-n
+{
+  "mappings": {
+    "properties": {
+      "titre": {
+        "type": "text"
+      },
+      "editions": {
+        "type": "nested",
+        "properties": {
+          "editeur": {
+            "type": "keyword"
+          },
+          "annee": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}
+
+PUT /livres-editions-n/_doc/1?refresh=true
+{
+  "titre": "Le Petit Prince",
+  "editions": [
+    {
+      "editeur": "Reynal & Hitchcock",
+      "annee": 1943
+    },
+    {
+      "editeur": "Gallimard",
+      "annee": 1946
+    }
+  ]
+}
+
+GET /livres-editions-n/_search
+{
+  "query": {
+    "nested": {
+      "path": "editions",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "term": {
+                "editions.editeur": "Gallimard"
+              }
+            },
+            {
+              "term": {
+                "editions.annee": 1943
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+GET /livres-editions-n/_search
+{
+  "query": {
+    "nested": {
+      "path": "editions",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "term": {
+                "editions.editeur": "Gallimard"
+              }
+            },
+            {
+              "term": {
+                "editions.annee": 1946
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+# --- join : une église et ses objets
+
+PUT /patrimoine-liens
+{
+  "mappings": {
+    "properties": {
+      "titre": {
+        "type": "text"
+      },
+      "materiaux": {
+        "type": "keyword"
+      },
+      "lien": {
+        "type": "join",
+        "relations": {
+          "monument": "objet"
+        }
+      }
+    }
+  }
+}
+
+PUT /patrimoine-liens/_doc/PA00113932
+{
+  "titre": "Église de la Madeleine, Vézelay",
+  "lien": "monument"
+}
+
+PUT /patrimoine-liens/_doc/PM89001432?routing=PA00113932
+{
+  "titre": "cloche",
+  "materiaux": "bronze",
+  "lien": {
+    "name": "objet",
+    "parent": "PA00113932"
+  }
+}
+
+PUT /patrimoine-liens/_doc/PM89001430?routing=PA00113932
+{
+  "titre": "autel",
+  "materiaux": "pierre",
+  "lien": {
+    "name": "objet",
+    "parent": "PA00113932"
+  }
+}
+
+PUT /patrimoine-liens/_doc/PM89001431?routing=PA00113932
+{
+  "titre": "statue : Christ en croix",
+  "materiaux": "bois : taillé",
+  "lien": {
+    "name": "objet",
+    "parent": "PA00113932"
+  }
+}
+
+GET /patrimoine-liens/_search
+{
+  "query": {
+    "has_child": {
+      "type": "objet",
+      "query": {
+        "match_all": {}
+      }
+    }
+  }
+}
+
+GET /patrimoine-liens/_search
+{
+  "_source": [
+    "titre",
+    "materiaux"
+  ],
+  "query": {
+    "has_parent": {
+      "parent_type": "monument",
+      "query": {
+        "match": {
+          "titre": "Vézelay"
+        }
+      }
+    }
+  }
+}
+
+# --- Les analyseurs
+
+POST /_analyze
+{
+  "analyzer": "standard",
+  "text": "L’abbaye du Mont-Saint-Michel et ses Châteaux"
+}
+
+POST /_analyze
+{
+  "analyzer": "french",
+  "text": "L’abbaye du Mont-Saint-Michel et ses Châteaux"
+}
+
+POST /_analyze
+{
+  "tokenizer": "standard",
+  "filter": [
+    "lowercase",
+    "asciifolding"
+  ],
+  "text": "L’abbaye du Mont-Saint-Michel et ses Châteaux"
+}

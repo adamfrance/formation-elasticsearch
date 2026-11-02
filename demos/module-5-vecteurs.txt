@@ -1,0 +1,46 @@
+# Module 5 : la recherche kNN à la main (démonstration), à coller dans la console de Kibana
+# (chaque requête a tourné sur Elasticsearch 9.5.6 ; Ctrl+Entrée exécute celle où est le curseur)
+
+# --- Quatre vecteurs à deux dimensions
+
+PUT /vecteurs-demo
+{
+  "mappings": {
+    "properties": {
+      "nom": {
+        "type": "keyword"
+      },
+      "v": {
+        "type": "dense_vector",
+        "dims": 2,
+        "similarity": "cosine"
+      }
+    }
+  }
+}
+
+POST /vecteurs-demo/_bulk?refresh=true
+{"index": {"_id": "1"}}
+{"nom": "château fort", "v": [1.0, 0.1]}
+{"index": {"_id": "2"}}
+{"nom": "forteresse", "v": [0.9, 0.2]}
+{"index": {"_id": "3"}}
+{"nom": "abbaye", "v": [0.2, 1.0]}
+{"index": {"_id": "4"}}
+{"nom": "monastère", "v": [0.3, 0.9]}
+
+GET /vecteurs-demo/_search
+{
+  "knn": {
+    "field": "v",
+    "query_vector": [
+      0.9,
+      0.3
+    ],
+    "k": 2,
+    "num_candidates": 10
+  },
+  "_source": [
+    "nom"
+  ]
+}

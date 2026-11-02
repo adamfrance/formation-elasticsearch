@@ -1,0 +1,151 @@
+# Module 4 : bool, completion, agrégations (démonstrations), à coller dans la console de Kibana
+# (chaque requête a tourné sur Elasticsearch 9.5.6 ; Ctrl+Entrée exécute celle où est le curseur)
+
+# --- Une boutique et des vols : bool
+
+GET /kibana_sample_data_ecommerce/_search
+{
+  "size": 2,
+  "_source": [
+    "customer_full_name",
+    "taxful_total_price",
+    "products.product_name"
+  ],
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "products.product_name": "shirt"
+          }
+        }
+      ],
+      "filter": [
+        {
+          "term": {
+            "currency": "EUR"
+          }
+        },
+        {
+          "range": {
+            "taxful_total_price": {
+              "gte": 100
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+GET /kibana_sample_data_flights/_search
+{
+  "size": 2,
+  "_source": [
+    "OriginCityName",
+    "DestCityName",
+    "Carrier",
+    "FlightDelayMin"
+  ],
+  "query": {
+    "bool": {
+      "filter": [
+        {
+          "term": {
+            "DestCountry": "FR"
+          }
+        }
+      ],
+      "should": [
+        {
+          "term": {
+            "Carrier": "Kibana Airlines"
+          }
+        },
+        {
+          "range": {
+            "FlightDelayMin": {
+              "gte": 60
+            }
+          }
+        }
+      ],
+      "minimum_should_match": 1,
+      "must_not": [
+        {
+          "term": {
+            "Cancelled": true
+          }
+        }
+      ]
+    }
+  }
+}
+
+# --- Le suggesteur completion
+
+PUT /livres-suggestion
+{
+  "mappings": {
+    "properties": {
+      "titre": {
+        "type": "completion"
+      }
+    }
+  }
+}
+
+POST /livres-suggestion/_bulk?refresh=true
+{"index": {"_id": "1"}}
+{"titre": "Le Petit Prince"}
+{"index": {"_id": "2"}}
+{"titre": "Le Père Goriot"}
+{"index": {"_id": "3"}}
+{"titre": "Le Rouge et le Noir"}
+{"index": {"_id": "4"}}
+{"titre": "Les Misérables"}
+{"index": {"_id": "5"}}
+{"titre": "La Peste"}
+{"index": {"_id": "6"}}
+{"titre": "Le Parfum"}
+
+GET /livres-suggestion/_search
+{
+  "_source": false,
+  "suggest": {
+    "livres": {
+      "prefix": "le p",
+      "completion": {
+        "field": "titre"
+      }
+    }
+  }
+}
+
+# --- Les agrégations d'une boutique
+
+GET /kibana_sample_data_ecommerce/_search
+{
+  "size": 0,
+  "aggs": {
+    "categories": {
+      "terms": {
+        "field": "category.keyword",
+        "size": 3
+      },
+      "aggs": {
+        "panier_moyen": {
+          "avg": {
+            "field": "taxful_total_price"
+          }
+        }
+      }
+    },
+    "par_jour": {
+      "date_histogram": {
+        "field": "order_date",
+        "calendar_interval": "week"
+      }
+    }
+  }
+}
