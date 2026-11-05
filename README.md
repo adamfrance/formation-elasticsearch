@@ -26,11 +26,13 @@ diapositives s'affichent l'une sous l'autre, pour lire ou imprimer.
 
 ## Repartir au même point, le matin du jour 2
 
-Si un atelier du jour 1 n'a pas abouti, le script de reprise remet tout en place (pipelines, templates, les 46 761
-monuments, l'alias `monuments`) ; Elasticsearch doit tourner :
+Si un atelier du jour 1 n'a pas abouti, le script de reprise remet tout en place (pipelines, templates,
+`monuments-v1` et `monuments-v2` avec les 46 761 monuments, l'alias `monuments`). Elasticsearch doit tourner, et le mot
+de passe de `elastic` doit être dans la variable `ELASTIC_PASSWORD`, comme au jour 1 : `export ELASTIC_PASSWORD='…'`,
+avec votre mot de passe entre les apostrophes. Mot de passe perdu : `bin/elasticsearch-reset-password -u elastic -b`,
+dans `~/elastic/elasticsearch-9.5.6`, en donne un nouveau.
 
 ```bash
-export ELASTIC_PASSWORD='votre mot de passe'
 bash ~/projets/formation-elasticsearch/corrige-jour1/patrimoine/reprise/reprise-jour2.sh
 ```
 
