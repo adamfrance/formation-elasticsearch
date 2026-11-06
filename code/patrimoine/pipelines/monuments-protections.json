@@ -1,0 +1,21 @@
+{
+  "description": "Patrimoine : l'historique des protections découpé en objets { date, type }",
+  "processors": [
+    {
+      "gsub": {
+        "field": "historique_protection",
+        "pattern": "\\u00a0",
+        "replacement": " ",
+        "ignore_missing": true,
+        "description": "espaces insécables remplacées par des espaces"
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "String h = ctx.historique_protection;\nif (h != null) {\n  List liste = new ArrayList();\n  for (String p : h.splitOnToken(' ; ')) {\n    int i = p.indexOf(' : ');\n    if (i > 0) {\n      liste.add(['date': p.substring(0, i).trim(), 'type': p.substring(i + 3).trim()]);\n    }\n  }\n  ctx.protections = liste;\n}",
+        "description": "« 1862 : classé MH ; 1926/12/22 : inscrit MH » en liste d'objets"
+      }
+    }
+  ]
+}

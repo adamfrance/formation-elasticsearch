@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patrimoine</title>
+<style>
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f6f4ef;color:#1f1d1a}
+header{background:#7a2e0e;color:#fff;padding:22px 28px}
+header h1{margin:0;font-size:26px}
+header p{margin:4px 0 0;opacity:.85}
+form{display:flex;gap:10px;padding:18px 28px;background:#fff;border-bottom:1px solid #e3ddd2}
+input{flex:1;font-size:17px;padding:10px 14px;border:1px solid #cfc6b6;border-radius:8px}
+button{font-size:16px;padding:10px 18px;border:0;border-radius:8px;background:#7a2e0e;color:#fff;cursor:pointer}
+main{display:grid;grid-template-columns:240px 1fr;gap:24px;padding:20px 28px}
+aside h2{font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:#7a2e0e}
+aside a{display:flex;justify-content:space-between;padding:4px 0;color:inherit;text-decoration:none}
+aside a.choisie{font-weight:700;color:#7a2e0e}
+article{background:#fff;border:1px solid #e3ddd2;border-radius:10px;padding:14px 18px;margin-bottom:12px}
+article h3{margin:0 0 4px;font-size:18px}
+article small{color:#6b6458}
+article p{margin:8px 0 0;line-height:1.45}
+mark{background:#ffe08a}
+#etat{color:#6b6458}
+</style>
+</head>
+<body>
+<header><h1>Patrimoine</h1><p>Les monuments historiques de France (base Mérimée, ministère de la Culture)</p></header>
+<form id="recherche"><input id="q" placeholder="abbaye cistercienne, château fort, pont romain…" autofocus>
+<button>Chercher</button></form>
+<main><aside id="facettes"></aside><section><p id="etat"></p><div id="resultats"></div></section></main>
+<script>
+const API = "http://localhost:8000/recherche";
+let region = null;
+
+function texte(t) {                                    // un texte sûr à placer dans la page
+  const d = document.createElement("div"); d.textContent = t ?? ""; return d.innerHTML;
+}
+
+async function chercher() {
+  const q = document.getElementById("q").value.trim();
+  if (!q) return;
+  const adresse = API + "?q=" + encodeURIComponent(q) + (region ? "&region=" + encodeURIComponent(region) : "");
+  try {
+    const donnees = await (await fetch(adresse)).json();
+    document.getElementById("etat").textContent = donnees.total + " monuments" + (region ? " · " + region : "");
+    document.getElementById("resultats").innerHTML = donnees.resultats.map(m =>
+      `<article><h3>${texte(m.titre)}</h3><small>${texte(m.commune)} · ${texte(m.region)} · ${texte((m.siecle || []).join(", "))}</small>` +
+      (m.extrait ? `<p>${m.extrait}</p>` : "") + `</article>`).join("");      // extrait déjà échappé par l'API
+    document.getElementById("facettes").innerHTML = "<h2>Régions</h2>" + donnees.facettes.regions.map(f =>
+      `<a href="#" data-region="${texte(f.valeur)}" class="${f.valeur === region ? "choisie" : ""}">` +
+      `<span>${texte(f.valeur)}</span><span>${f.nombre}</span></a>`).join("");
+  } catch (erreur) {
+    document.getElementById("etat").textContent = "La recherche n'a pas pu joindre l'API : " + erreur.message;
+  }
+}
+
+document.getElementById("recherche").addEventListener("submit", e => { e.preventDefault(); region = null; chercher(); });
+document.getElementById("facettes").addEventListener("click", e => {
+  const lien = e.target.closest("a"); if (!lien) return;
+  e.preventDefault(); region = lien.dataset.region === region ? null : lien.dataset.region; chercher();
+});
+</script>
+</body>
+</html>

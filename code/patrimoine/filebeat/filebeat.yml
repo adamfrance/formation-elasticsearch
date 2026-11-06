@@ -1,0 +1,19 @@
+# Patrimoine : Filebeat lit les fichiers CSV du ministère de la Culture, ligne par ligne,
+# et envoie chaque ligne à Logstash. Le champ fields.base dit de quelle base vient la ligne.
+filebeat.inputs:
+  - type: filestream          # une entrée par fichier, lu ligne par ligne, avec son identifiant
+    id: merimee
+    paths:
+      - ${HOME}/projets/formation-elasticsearch/patrimoine/donnees/merimee.csv
+    fields:
+      base: merimee
+  - type: filestream
+    id: palissy
+    enabled: false             # la suite pour ceux qui ont fini
+    paths:
+      - ${HOME}/projets/formation-elasticsearch/patrimoine/donnees/palissy.csv
+    fields:
+      base: palissy
+
+output.logstash:               # tout part vers Logstash
+  hosts: ["localhost:5044"]

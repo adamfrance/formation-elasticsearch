@@ -1,0 +1,189 @@
+{
+  "description": "Patrimoine : une ligne de la base Mérimée ramenée à des champs courts et propres",
+  "processors": [
+    {
+      "rename": {
+        "field": "Reference",
+        "target_field": "reference",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Titre_editorial_de_la_notice",
+        "target_field": "titre",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Denomination_de_l_edifice",
+        "target_field": "denomination",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Commune_forme_editoriale",
+        "target_field": "commune",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Departement_en_lettres",
+        "target_field": "departement",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Departement_format_numerique",
+        "target_field": "departement_code",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Region",
+        "target_field": "region",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Siecle_de_la_campagne_principale_de_construction",
+        "target_field": "siecle",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Typologie_de_la_protection",
+        "target_field": "protection",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Date_et_typologie_de_la_protection",
+        "target_field": "historique_protection",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Historique",
+        "target_field": "historique",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Statut_juridique_de_l_edifice",
+        "target_field": "statut",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "coordonnees_au_format_WGS84",
+        "target_field": "localisation",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Lien_vers_la_base_Palissy",
+        "target_field": "objets",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Date_de_la_derniere_mise_a_jour",
+        "target_field": "mise_a_jour",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "denomination",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "departement_code",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "siecle",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "protection",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "statut",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "objets",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "gsub": {
+        "field": "objets",
+        "pattern": "^https://www.pop.culture.gouv.fr/notice/palissy/",
+        "replacement": "",
+        "ignore_missing": true
+      }
+    },
+    {
+      "remove": {
+        "keep": [
+          "reference",
+          "titre",
+          "denomination",
+          "commune",
+          "departement",
+          "departement_code",
+          "region",
+          "siecle",
+          "protection",
+          "historique_protection",
+          "historique",
+          "statut",
+          "localisation",
+          "objets",
+          "mise_a_jour"
+        ]
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "erreur_ingestion",
+        "value": "{{ _ingest.on_failure_message }}"
+      }
+    }
+  ]
+}

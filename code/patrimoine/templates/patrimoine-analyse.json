@@ -1,0 +1,60 @@
+{
+  "template": {
+    "settings": {
+      "analysis": {
+        "filter": {
+          "elision_fr": {
+            "type": "elision",
+            "articles_case": true,
+            "articles": [
+              "l",
+              "m",
+              "t",
+              "qu",
+              "n",
+              "s",
+              "j",
+              "d",
+              "c",
+              "jusqu",
+              "quoiqu",
+              "lorsqu",
+              "puisqu"
+            ]
+          },
+          "mots_vides_fr": {
+            "type": "stop",
+            "stopwords": "_french_"
+          },
+          "racine_fr": {
+            "type": "stemmer",
+            "language": "light_french"
+          }
+        },
+        "analyzer": {
+          "francais_patrimoine": {
+            "tokenizer": "standard",
+            "filter": [
+              "elision_fr",
+              "lowercase",
+              "mots_vides_fr",
+              "racine_fr",
+              "asciifolding"
+            ]
+          },
+          "francais_simple": {
+            "tokenizer": "standard",
+            "filter": [
+              "elision_fr",
+              "lowercase",
+              "asciifolding"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "_meta": {
+    "description": "Patrimoine : les deux analyseurs français, communs à tous les index"
+  }
+}

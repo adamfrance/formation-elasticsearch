@@ -1,0 +1,910 @@
+# Patrimoine, jour 1 : les corrections des ateliers et des exercices, à coller dans la console de Kibana
+# (chaque requête a tourné sur Elasticsearch 9.5.6 ; Ctrl+Entrée exécute celle où est le curseur)
+
+# --- Atelier 1c : l'index des monuments, trois documents
+
+PUT /monuments
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  }
+}
+
+GET /_cat/shards/monuments?v&h=index,shard,prirep,state,docs,node
+
+GET /_cluster/health/monuments
+
+PUT /monuments/_doc/PA00110460
+{
+  "titre": "Abbaye et dépendances",
+  "denomination": "abbaye",
+  "commune": "Le Mont-Saint-Michel",
+  "departement": "Manche",
+  "region": "Normandie",
+  "siecle": "11e siècle;16e siècle",
+  "protection": "classé MH",
+  "historique": "Abbaye bénédictine de style gothique dédiée à l'archange Saint-Michel construite du 11e au 16e siècle."
+}
+
+PUT /monuments/_doc/PA00103291
+{
+  "titre": "Pont du Gard et aqueduc romain de Nîmes",
+  "denomination": "site archéologique;pont aqueduc",
+  "commune": "Vers-Pont-du-Gard",
+  "departement": "Gard",
+  "region": "Occitanie",
+  "siecle": "Gallo-romain",
+  "protection": "classé MH;inscrit MH partiellement;protection partielle",
+  "historique": "Importance de cet aqueduc dans la connaissance architecturale et technique des aqueducs romains et dans son lien avec la cité de Nîmes. Long de cinquante kilomètres, depuis les sources de l'Eure à Uzès jusqu'à son arrivée au castellum divisorium, l'ouvrage canalisait l'eau destinée à alimenter Nîmes. Construit au 1er siècle après JC."
+}
+
+PUT /monuments/_doc/PA00102588
+{
+  "titre": "Cité de Carcassonne",
+  "denomination": "fortification d'agglomération;agglomération",
+  "commune": "Carcassonne",
+  "departement": "Aude",
+  "region": "Occitanie",
+  "siecle": "5e siècle;11e siècle;12e siècle",
+  "protection": "classé MH",
+  "historique": "Cité médiévale fortifiée dotée d'un système défensif important, très restaurée au 19e siècle par Viollet-le-Duc. Une portion des murailles remonte au 5e siècle, sans doute suite au passage des Wisigoths. Le château date des 11e et 12e siècles. La porte Narbonnaise et toute la partie méridionale de l'enceinte intérieure, ainsi que le couronnement des tours, ont été construits au 13e siècle, après que le dernier vicomte de Carcassonne eut abandonné en 1247 ses droits seigneuriaux à Saint-Louis. L'enceinte extérieure paraît être peu postérieure à ces dernières constructions."
+}
+
+GET /monuments/_doc/PA00103291
+
+GET /monuments/_search
+{
+  "query": {
+    "match": {
+      "historique": "aqueduc romain"
+    }
+  }
+}
+
+GET /monuments/_search?q=historique:abbaye
+
+# --- Exercice : dix monuments d'un coup
+
+POST /monuments/_bulk
+{"index": {"_id": "PA00078776"}}
+{"titre": "Cathédrale Notre-Dame", "denomination": "cathédrale", "commune": "Reims", "departement": "Marne", "region": "Grand Est", "siecle": "13e siècle", "protection": "classé MH", "historique": "Ancienne salle du Trésor et restes du cloître : datation non précisée ; Cathédrale : 13e siècle."}
+{"index": {"_id": "PA00081941"}}
+{"titre": "Palais des Papes", "denomination": "palais", "commune": "Avignon", "departement": "Vaucluse", "region": "Provence-Alpes-Côte d'Azur", "siecle": "14e siècle", "protection": "classé MH", "historique": "Palais élevé au 14e siècle quand la ville était siège de la papauté."}
+{"index": {"_id": "PA00084875"}}
+{"titre": "Château du Haut-Koenigsbourg (ou Hohenkoenigsbourg)", "denomination": "château fort", "commune": "Orschwiller", "departement": "Bas-Rhin", "region": "Grand Est", "siecle": "12e siècle;15e siècle;1er quart 20e siècle", "protection": "classé MH", "historique": "Ancien château médiéval attesté depuis le 12e siècle et démoli lors de la Guerre de Trente Ans. Les ruines du château sont données par la Ville de Sélestat à l'empereur d'Allemagne Guillaume II en 1899. De 1901 à 1908, ce dernier fait consolider l'édifice par l'architecte Bodo Ebhardt. S'appuyant sur une importante documentation, celui-ci réalise une restitution du château dans son état supposé du 15e siècle. Le même programme de restitution s'applique aussi aux aménagements intérieurs, la peinture des murs et des voûtes étant confiée à Léo Schnug, peintre strasbourgeois. Devenu un véritable château-musée, il attire de très nombreux visiteurs. La propriété du château (anciennement propriété de l'Etat, ministère de la culture) a été transférée au département le 1er janvier 2007."}
+{"index": {"_id": "PA00112529"}}
+{"titre": "Abbaye de Fontenay", "denomination": "abbaye", "commune": "Marmagne", "departement": "Côte-d'Or", "region": "Bourgogne-Franche-Comté", "siecle": "1ère moitié 12e siècle", "protection": "classé MH", "historique": "Abbaye fondée en 1118 par Saint-Bernard."}
+{"index": {"_id": "PA00103091"}}
+{"titre": "Amphithéâtre ou Arènes", "denomination": "amphithéâtre;arène", "commune": "Nîmes", "departement": "Gard", "region": "Occitanie", "siecle": "Haut-Empire", "protection": "classé MH", "historique": "Les arènes, situées au centre de la ville, étaient destinées à la présentation de chasses et de combats de gladiateurs. Au Moyen-Age, le monument servit de refuge à une partie de la population urbaine. Des maisons, deux églises et le château des chevaliers des Arènes y furent construits avant d'être démolis au début du 19e siècle. La structure des arènes est constituée par un ensemble complexe de galeries concentriques et rayonnantes, couvertes par des voûtes de divers types, permettant d'assurer aisément la circulation du public. La piste centrale est accessible par deux entrées principales sur le grand axe et par deux petites portes aux extrémités du petit axe. Deux galeries souterraines servaient sans doute de coulisses et de logement pour la machinerie. Une cavea de 34 gradins pouvait recevoir environ 25.000 spectateurs. Elle était abritée par un velum tendu sur des câbles que portaient 120 mâts plantés dans des consoles. Certains des spectateurs disposaient de places réservées, signalées par des inscriptions. Des sillons gravés sur les gradins, indiquaient sans doute les limites des places individuelles."}
+{"index": {"_id": "PA00099066"}}
+{"titre": "Maison de Napoléon Bonaparte", "denomination": "maison", "commune": "Ajaccio", "departement": "Corse-du-Sud", "region": "Corse", "siecle": "17e siècle;18e siècle", "protection": "classé MH", "historique": "La construction de la maison remonte au début du 17e siècle. Elle possédait à cette époque deux étages. A la naissance de Napoléon, l'édifice comprenait trois étages. Charles Bonaparte, père de Napoléon, construisit une terrasse en 1774. Au rez-de-chaussée, le vestibule à escalier donne accès aux étages. S'y trouvent également une cuisine, des caves, buchers et pièces de débarras. Le premier étage comprend un salon, une salle à manger, le cabinet de travail de Charles Bonaparte et la chambre où est né Napoléon. Une galerie éclairée par six fenêtres sur rue et six fenêtres et portes à balcon, donnent sur la terrasse qui est de niveau avec l'étage. La galerie donne accès au fumoir, à une chambre et une pièce servant de cabinet de travail ou de toilette. Les deux derniers étages présentent la même distribution et comprenaient des chambres à coucher. Pendant l'enfance de Napoléon, la famille occupait les deux premiers étages. Le mobilier de la maison semble avoir été renouvelé en partie par Joseph Bonaparte lorsqu'il revint d'Italie comme commissaire des guerres."}
+{"index": {"_id": "PA46000020"}}
+{"titre": "Cité religieuse", "denomination": "ensemble religieux", "commune": "Rocamadour", "departement": "Lot", "region": "Occitanie", "siecle": "Moyen Age;19e siècle", "protection": "inscrit MH partiellement;classé MH partiellement;protection totale", "historique": "Le renom du pélerinage marial de Rocamadour place cette petite cité du Haut Quercy parmi les sites majeurs du monde chrétien depuis le Moyen Age. En 1105, première mention certaine de l'église Sainte-Marie ou Notre-Dame sur une bulle du pape Pascal II. L'ensemble des bâtiments qui constituent la cité religieuse est construit au 12e siècle (découverte d'un corps \"integrum\" identifié comme celui de Saint-Amadour) : au milieu du 12e siècle, Notre-Dame, Saint-Michel Saint-Sauveur et Saint-Amadour existent ; en 1223, mention de la salle neuve du palais abbatial. Des reconstructions partielles ponctuent les prises et pillages dont la cité est victime jusqu'au 16e siècle. Réduit à une dimension locale aux 17e et 18e siècles, le pélerinage périclite et les procès-verbaux d'époque révolutionnaire notent l'état ruiniforme des bâtiments. La restauration matérielle du site sera orchestrée par les évêques de Cahors à partir de 1842 et conduite par l'abbé Cheval, à partir du noyau médiéval. Première campagne de restauration de 1858 à 1864 : Saint-Sauveur-Saint-Amadour (1858-1860) , Sainte-Anne (1861-1862) et Notre-Dame (1860-1864) ; Saint-Michel restaurée en 1865, Saint-Blaise vers 1867 ; dernière phase du chantier concernant le palais abbatial, la porterie et Saint-Jean-Baptiste entre 1869 et 1872."}
+{"index": {"_id": "PA00096993"}}
+{"titre": "Cathédrale Notre-Dame", "denomination": "cathédrale", "commune": "Chartres", "departement": "Eure-et-Loir", "region": "Centre-Val de Loire", "siecle": "11e siècle;13e siècle;16e siècle", "protection": "classé MH"}
+{"index": {"_id": "PA00081815"}}
+{"titre": "Chapelle et pont Saint-Bénézet", "denomination": "chapelle;pont", "commune": "Avignon", "departement": "Vaucluse", "region": "Provence-Alpes-Côte d'Azur", "siecle": "12e siècle", "protection": "classé MH"}
+{"index": {"_id": "PA00099077"}}
+{"titre": "Enceinte fortifiée dite citadelle", "denomination": "citadelle", "commune": "Bonifacio", "departement": "Corse-du-Sud", "region": "Corse", "protection": "inscrit MH partiellement;classé MH partiellement"}
+
+GET /monuments/_count
+
+GET /_cat/shards/monuments?v
+
+# --- Exercice : le pipeline de nettoyage
+
+PUT /_ingest/pipeline/monuments-nettoyage
+{
+  "description": "Patrimoine : une ligne de la base Mérimée ramenée à des champs courts et propres",
+  "processors": [
+    {
+      "rename": {
+        "field": "Reference",
+        "target_field": "reference",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Titre_editorial_de_la_notice",
+        "target_field": "titre",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Denomination_de_l_edifice",
+        "target_field": "denomination",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Commune_forme_editoriale",
+        "target_field": "commune",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Departement_en_lettres",
+        "target_field": "departement",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Departement_format_numerique",
+        "target_field": "departement_code",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Region",
+        "target_field": "region",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Siecle_de_la_campagne_principale_de_construction",
+        "target_field": "siecle",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Typologie_de_la_protection",
+        "target_field": "protection",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Date_et_typologie_de_la_protection",
+        "target_field": "historique_protection",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Historique",
+        "target_field": "historique",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Statut_juridique_de_l_edifice",
+        "target_field": "statut",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "coordonnees_au_format_WGS84",
+        "target_field": "localisation",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Lien_vers_la_base_Palissy",
+        "target_field": "objets",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Date_de_la_derniere_mise_a_jour",
+        "target_field": "mise_a_jour",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "denomination",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "departement_code",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "siecle",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "protection",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "statut",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "objets",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "gsub": {
+        "field": "objets",
+        "pattern": "^https://www.pop.culture.gouv.fr/notice/palissy/",
+        "replacement": "",
+        "ignore_missing": true
+      }
+    },
+    {
+      "remove": {
+        "keep": [
+          "reference",
+          "titre",
+          "denomination",
+          "commune",
+          "departement",
+          "departement_code",
+          "region",
+          "siecle",
+          "protection",
+          "historique_protection",
+          "historique",
+          "statut",
+          "localisation",
+          "objets",
+          "mise_a_jour"
+        ]
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "erreur_ingestion",
+        "value": "{{ _ingest.on_failure_message }}"
+      }
+    }
+  ]
+}
+
+POST /_ingest/pipeline/monuments-nettoyage/_simulate
+{
+  "docs": [
+    {
+      "_source": {
+        "Reference": "PA00102588",
+        "Etablissement_affectataire_de_l_edifice": "direction générale des patrimoines",
+        "Nature_de_la_protection": "liste;arrêté",
+        "Auteur_de_l_edifice": "Viollet-le-Duc Eugène (architecte)",
+        "Cadastre": "E 99, 109 à 112, 138, 1868;E5 1755;1633, 1129 P",
+        "Commune_forme_index": "Carcassonne",
+        "Copyright": "© Monuments historiques, 1992. Cette notice reprend intégralement les termes de l’arrêté de protection au titre des Monuments historiques. Elle répond à l’obligation réglementaire du ministère de la Culture d’établir la liste générale des immeubles protégés (art. R. 621-80 du Code du patrimoine). Elle est donc opposable et fait foi juridiquement. Aucune copie numérique ou papier ne sera fournie par courrier ni courriel. Le dossier de protection complet et l’arrêté sont consultables uniquement sur place, dans la salle de lecture de la Médiathèque du patrimoine et de la photographie (MPP), à Charenton-le-Pont (Val-de-Marne).",
+        "Denomination_de_l_edifice": "fortification d'agglomération;agglomération",
+        "Date_de_la_derniere_mise_a_jour": "2026-03-04",
+        "Date_de_creation_de_la_notice": "1993-10-21",
+        "Typologie_du_dossier": "dossier de protection",
+        "Date_et_typologie_de_la_protection": "1862 : classé MH ; 1926/12/22 : classé MH ; 1942/01/15 : classé MH ; 1932/05/28 : classé MH ; 1942/07/11 : classé MH",
+        "Departement_format_numerique": "11",
+        "Departement_en_lettres": "Aude",
+        "Cadre_de_l_etude": "recensement immeubles MH",
+        "Historique": "Cité médiévale fortifiée dotée d'un système défensif important, très restaurée au 19e siècle par Viollet-le-Duc. Une portion des murailles remonte au 5e siècle, sans doute suite au passage des Wisigoths. Le château date des 11e et 12e siècles. La porte Narbonnaise et toute la partie méridionale de l'enceinte intérieure, ainsi que le couronnement des tours, ont été construits au 13e siècle, après que le dernier vicomte de Carcassonne eut abandonné en 1247 ses droits seigneuriaux à Saint-Louis. L'enceinte extérieure paraît être peu postérieure à ces dernières constructions.",
+        "Identifiant_Agregee": "IYUJ8N",
+        "COG_Insee_lors_de_la_protection": "11069",
+        "Liens_externes": "https://mediatheque-patrimoine.culture.gouv.fr/sites/mediatheque/files/documents/liste_mh_1862_0.pdf",
+        "Lien_vers_la_base_Archiv_MH": "https://archives-map.culture.gouv.fr/archive/recherche/simple/n:19?RECH_S=PA00102588&RECH_DocumentsNumerises=0&Archives.RECH_Valid=&type=simple",
+        "Observations": "site inscrit 20 07 1943 (arrêté) : cité et son cadre ; site inscrit 10 03 1977 (arrêté) : centre historique de la ville basse",
+        "Precision_affectataire": "édifice géré par le CMN (Centre des Monuments Natonaux)",
+        "Precision_de_la_localisation": "Anciennement région de : Languedoc-Roussillon",
+        "Precision_de_la_protection": "Les fortifications : classement par liste de 1862 - Les deux parcelles de terrain, lieux-dits Talus de la Barbacane et Porte d'Aude (cad. E 99, 1868) : classement par arrêté du 22 décembre 1926 - Les parcelles dénommées Champ Rigal Cadène et Grand Champ Sabatier Jalabert, à l'exclusion d'une zone délimitée sur le plan annexé à l'arrêté (cad. 1633, 1129 P) : classement par arrêté du 15 janvier 1942 - Le terrain compris entre la Cité et le grand séminaire (cad. E5 1755) : classement par arrêté du 28 mai 1932 - Le terrain dit Champ du Tournoi, situé en bordure du chemin de la Cité de Carcassonne à Sainte-Croix (cad. E 109 à 112, 138) : classement par arrêté du 11 juillet 1942",
+        "Typologie_de_la_protection": "classé MH",
+        "Lien_vers_la_base_Palissy": "https://www.pop.culture.gouv.fr/notice/palissy/PM11003104",
+        "Region": "Occitanie",
+        "Siecle_de_campagne_secondaire_de_construction": "19e siècle",
+        "Siecle_de_la_campagne_principale_de_construction": "5e siècle;11e siècle;12e siècle",
+        "Format_abrege_du_siecle_de_construction": "5e s.;11e s.;12e s.",
+        "Typologie_de_la_zone_de_protection": "liste du patrimoine mondial ; site inscrit",
+        "Statut_juridique_de_l_edifice": "propriété de l'État",
+        "Titre_editorial_de_la_notice": "Cité de Carcassonne",
+        "Commune_forme_editoriale": "Carcassonne",
+        "coordonnees_au_format_WGS84": "43.2064207097729,2.36556718854597"
+      }
+    }
+  ]
+}
+
+POST /_ingest/pipeline/_simulate
+{
+  "pipeline": {
+    "processors": [
+      {
+        "convert": {
+          "field": "departement_code",
+          "type": "integer"
+        }
+      }
+    ]
+  },
+  "docs": [
+    {
+      "_source": {
+        "departement_code": "11"
+      }
+    },
+    {
+      "_source": {
+        "departement_code": "2A"
+      }
+    }
+  ]
+}
+
+PUT /_ingest/pipeline/objets-nettoyage
+{
+  "description": "Patrimoine : une ligne de la base Palissy (objets mobiliers) ramenée à des champs courts et propres",
+  "processors": [
+    {
+      "rename": {
+        "field": "Reference",
+        "target_field": "reference",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Titre_editorial",
+        "target_field": "titre",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Denomination",
+        "target_field": "denomination",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Commune_forme_editoriale",
+        "target_field": "commune",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Departement_en_lettres",
+        "target_field": "departement",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Region",
+        "target_field": "region",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Siecle_de_creation",
+        "target_field": "siecle",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Typologie_de_la_protection",
+        "target_field": "protection",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Historique",
+        "target_field": "historique",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Description",
+        "target_field": "description",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Materiaux",
+        "target_field": "materiaux",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Nom_de_l_edifice",
+        "target_field": "edifice",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Reference_a_une_notice_Merimee_MH",
+        "target_field": "monument",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Date_de_la_derniere_mise_a_jour",
+        "target_field": "mise_a_jour",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "denomination",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "siecle",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "protection",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "materiaux",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "monument",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "remove": {
+        "keep": [
+          "reference",
+          "titre",
+          "denomination",
+          "commune",
+          "departement",
+          "region",
+          "siecle",
+          "protection",
+          "historique",
+          "description",
+          "materiaux",
+          "edifice",
+          "monument",
+          "mise_a_jour"
+        ]
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "erreur_ingestion",
+        "value": "{{ _ingest.on_failure_message }}"
+      }
+    }
+  ]
+}
+
+# --- Atelier 2 : vérifier le chargement
+
+GET /monuments/_count
+
+GET /monuments/_doc/PA00102588
+
+GET /monuments/_count?q=erreur_ingestion:*
+
+GET /monuments/_count?q=tags:_csvparsefailure
+
+# --- API Search lite
+
+GET /monuments/_search?q=Viollet-le-Duc&size=3&_source=titre,commune
+
+GET /monuments/_count?q=region:Bretagne%20AND%20denomination:château
+
+GET /monuments/_search?q=historique:cistercienne&size=2&_source=titre,commune,siecle
+
+# --- Les pièges du mapping deviné
+
+GET /monuments/_mapping/field/localisation,departement_code,siecle,mise_a_jour
+
+GET /monuments/_search
+{
+  "query": {
+    "geo_distance": {
+      "distance": "2km",
+      "localisation": "43.2064,2.3655"
+    }
+  }
+}
+
+GET /monuments/_search
+{
+  "size": 0,
+  "aggs": {
+    "regions": {
+      "terms": {
+        "field": "region"
+      }
+    }
+  }
+}
+
+GET /monuments/_search
+{
+  "size": 0,
+  "aggs": {
+    "regions": {
+      "terms": {
+        "field": "region.keyword",
+        "size": 5
+      }
+    }
+  }
+}
+
+# --- Atelier 3 : template, réindexation, alias
+
+PUT /_component_template/patrimoine-analyse
+{
+  "template": {
+    "settings": {
+      "analysis": {
+        "filter": {
+          "elision_fr": {
+            "type": "elision",
+            "articles_case": true,
+            "articles": [
+              "l",
+              "m",
+              "t",
+              "qu",
+              "n",
+              "s",
+              "j",
+              "d",
+              "c",
+              "jusqu",
+              "quoiqu",
+              "lorsqu",
+              "puisqu"
+            ]
+          },
+          "mots_vides_fr": {
+            "type": "stop",
+            "stopwords": "_french_"
+          },
+          "racine_fr": {
+            "type": "stemmer",
+            "language": "light_french"
+          }
+        },
+        "analyzer": {
+          "francais_patrimoine": {
+            "tokenizer": "standard",
+            "filter": [
+              "elision_fr",
+              "lowercase",
+              "mots_vides_fr",
+              "racine_fr",
+              "asciifolding"
+            ]
+          },
+          "francais_simple": {
+            "tokenizer": "standard",
+            "filter": [
+              "elision_fr",
+              "lowercase",
+              "asciifolding"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "_meta": {
+    "description": "Patrimoine : les deux analyseurs français, communs à tous les index"
+  }
+}
+
+PUT /_ingest/pipeline/monuments-protections
+{
+  "description": "Patrimoine : l'historique des protections découpé en objets { date, type }",
+  "processors": [
+    {
+      "gsub": {
+        "field": "historique_protection",
+        "pattern": "\\u00a0",
+        "replacement": " ",
+        "ignore_missing": true,
+        "description": "espaces insécables remplacées par des espaces"
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "String h = ctx.historique_protection;\nif (h != null) {\n  List liste = new ArrayList();\n  for (String p : h.splitOnToken(' ; ')) {\n    int i = p.indexOf(' : ');\n    if (i > 0) {\n      liste.add(['date': p.substring(0, i).trim(), 'type': p.substring(i + 3).trim()]);\n    }\n  }\n  ctx.protections = liste;\n}",
+        "description": "« 1862 : classé MH ; 1926/12/22 : inscrit MH » en liste d'objets"
+      }
+    }
+  ]
+}
+
+PUT /_index_template/monuments
+{
+  "index_patterns": [
+    "monuments-v*"
+  ],
+  "composed_of": [
+    "patrimoine-analyse"
+  ],
+  "priority": 200,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "refresh_interval": "1s",
+      "index.final_pipeline": "monuments-protections"
+    },
+    "mappings": {
+      "dynamic": false,
+      "properties": {
+        "reference": {
+          "type": "keyword"
+        },
+        "titre": {
+          "type": "text",
+          "analyzer": "francais_patrimoine",
+          "fields": {
+            "exact": {
+              "type": "keyword"
+            }
+          },
+          "copy_to": "suggestion"
+        },
+        "suggestion": {
+          "type": "search_as_you_type",
+          "analyzer": "francais_simple"
+        },
+        "denomination": {
+          "type": "keyword",
+          "fields": {
+            "texte": {
+              "type": "text",
+              "analyzer": "francais_patrimoine"
+            }
+          }
+        },
+        "commune": {
+          "type": "keyword",
+          "fields": {
+            "texte": {
+              "type": "text",
+              "analyzer": "francais_simple"
+            }
+          }
+        },
+        "departement": {
+          "type": "keyword"
+        },
+        "departement_code": {
+          "type": "keyword"
+        },
+        "region": {
+          "type": "keyword"
+        },
+        "siecle": {
+          "type": "keyword"
+        },
+        "protection": {
+          "type": "keyword"
+        },
+        "historique_protection": {
+          "type": "text",
+          "index": false
+        },
+        "protections": {
+          "type": "nested",
+          "properties": {
+            "date": {
+              "type": "date",
+              "format": "yyyy/MM/dd||yyyy",
+              "ignore_malformed": true
+            },
+            "type": {
+              "type": "keyword"
+            }
+          }
+        },
+        "historique": {
+          "type": "text",
+          "analyzer": "francais_patrimoine"
+        },
+        "statut": {
+          "type": "keyword"
+        },
+        "localisation": {
+          "type": "geo_point"
+        },
+        "objets": {
+          "type": "keyword"
+        },
+        "mise_a_jour": {
+          "type": "date"
+        },
+        "erreur_ingestion": {
+          "type": "keyword"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "description": "Patrimoine : réglages et mapping des index de monuments"
+  }
+}
+
+POST /_index_template/_simulate_index/monuments-v1
+
+PUT /monuments-v1
+
+POST /monuments-v1/_analyze
+{
+  "analyzer": "francais_patrimoine",
+  "text": "L’abbaye et les Châteaux de la Loire"
+}
+
+POST /monuments-v1/_analyze
+{
+  "analyzer": "francais_simple",
+  "text": "L’abbaye et les Châteaux de la Loire"
+}
+
+POST /_reindex?wait_for_completion=true&refresh=true
+{
+  "source": {
+    "index": "monuments"
+  },
+  "dest": {
+    "index": "monuments-v1"
+  }
+}
+
+POST /_aliases
+{
+  "actions": [
+    {
+      "remove_index": {
+        "index": "monuments"
+      }
+    },
+    {
+      "add": {
+        "index": "monuments-v1",
+        "alias": "monuments"
+      }
+    }
+  ]
+}
+
+GET /monuments/_count
+
+GET /monuments/_search
+{
+  "size": 3,
+  "_source": [
+    "titre",
+    "commune"
+  ],
+  "query": {
+    "geo_distance": {
+      "distance": "2km",
+      "localisation": "43.2064,2.3655"
+    }
+  }
+}
+
+GET /monuments/_search
+{
+  "size": 0,
+  "aggs": {
+    "regions": {
+      "terms": {
+        "field": "region",
+        "size": 5
+      }
+    }
+  }
+}
+
+# --- Si vous avez fini
+
+GET /monuments/_count
+{
+  "query": {
+    "nested": {
+      "path": "protections",
+      "query": {
+        "bool": {
+          "filter": [
+            {
+              "term": {
+                "protections.type": "classé MH"
+              }
+            },
+            {
+              "range": {
+                "protections.date": {
+                  "lt": "1900"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+GET /monuments/_count
+{
+  "query": {
+    "exists": {
+      "field": "_ignored"
+    }
+  }
+}
+
+GET /monuments/_search
+{
+  "size": 3,
+  "_source": [
+    "titre",
+    "historique_protection"
+  ],
+  "fields": [
+    "_ignored"
+  ],
+  "query": {
+    "exists": {
+      "field": "_ignored"
+    }
+  }
+}

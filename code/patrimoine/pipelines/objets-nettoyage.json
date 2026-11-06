@@ -1,0 +1,166 @@
+{
+  "description": "Patrimoine : une ligne de la base Palissy (objets mobiliers) ramenée à des champs courts et propres",
+  "processors": [
+    {
+      "rename": {
+        "field": "Reference",
+        "target_field": "reference",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Titre_editorial",
+        "target_field": "titre",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Denomination",
+        "target_field": "denomination",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Commune_forme_editoriale",
+        "target_field": "commune",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Departement_en_lettres",
+        "target_field": "departement",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Region",
+        "target_field": "region",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Siecle_de_creation",
+        "target_field": "siecle",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Typologie_de_la_protection",
+        "target_field": "protection",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Historique",
+        "target_field": "historique",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Description",
+        "target_field": "description",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Materiaux",
+        "target_field": "materiaux",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Nom_de_l_edifice",
+        "target_field": "edifice",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Reference_a_une_notice_Merimee_MH",
+        "target_field": "monument",
+        "ignore_missing": true
+      }
+    },
+    {
+      "rename": {
+        "field": "Date_de_la_derniere_mise_a_jour",
+        "target_field": "mise_a_jour",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "denomination",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "siecle",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "protection",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "materiaux",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "split": {
+        "field": "monument",
+        "separator": "\\s*;\\s*",
+        "ignore_missing": true
+      }
+    },
+    {
+      "remove": {
+        "keep": [
+          "reference",
+          "titre",
+          "denomination",
+          "commune",
+          "departement",
+          "region",
+          "siecle",
+          "protection",
+          "historique",
+          "description",
+          "materiaux",
+          "edifice",
+          "monument",
+          "mise_a_jour"
+        ]
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "erreur_ingestion",
+        "value": "{{ _ingest.on_failure_message }}"
+      }
+    }
+  ]
+}

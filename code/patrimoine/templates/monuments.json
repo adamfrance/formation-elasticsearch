@@ -1,0 +1,111 @@
+{
+  "index_patterns": [
+    "monuments-v*"
+  ],
+  "composed_of": [
+    "patrimoine-analyse"
+  ],
+  "priority": 200,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "refresh_interval": "1s",
+      "index.final_pipeline": "monuments-protections"
+    },
+    "mappings": {
+      "dynamic": false,
+      "properties": {
+        "reference": {
+          "type": "keyword"
+        },
+        "titre": {
+          "type": "text",
+          "analyzer": "francais_patrimoine",
+          "fields": {
+            "exact": {
+              "type": "keyword"
+            }
+          },
+          "copy_to": "suggestion"
+        },
+        "suggestion": {
+          "type": "search_as_you_type",
+          "analyzer": "francais_simple"
+        },
+        "denomination": {
+          "type": "keyword",
+          "fields": {
+            "texte": {
+              "type": "text",
+              "analyzer": "francais_patrimoine"
+            }
+          }
+        },
+        "commune": {
+          "type": "keyword",
+          "fields": {
+            "texte": {
+              "type": "text",
+              "analyzer": "francais_simple"
+            }
+          }
+        },
+        "departement": {
+          "type": "keyword"
+        },
+        "departement_code": {
+          "type": "keyword"
+        },
+        "region": {
+          "type": "keyword"
+        },
+        "siecle": {
+          "type": "keyword"
+        },
+        "protection": {
+          "type": "keyword"
+        },
+        "historique_protection": {
+          "type": "text",
+          "index": false
+        },
+        "protections": {
+          "type": "nested",
+          "properties": {
+            "date": {
+              "type": "date",
+              "format": "yyyy/MM/dd||yyyy",
+              "ignore_malformed": true
+            },
+            "type": {
+              "type": "keyword"
+            }
+          }
+        },
+        "historique": {
+          "type": "text",
+          "analyzer": "francais_patrimoine"
+        },
+        "statut": {
+          "type": "keyword"
+        },
+        "localisation": {
+          "type": "geo_point"
+        },
+        "objets": {
+          "type": "keyword"
+        },
+        "mise_a_jour": {
+          "type": "date"
+        },
+        "erreur_ingestion": {
+          "type": "keyword"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "description": "Patrimoine : réglages et mapping des index de monuments"
+  }
+}
